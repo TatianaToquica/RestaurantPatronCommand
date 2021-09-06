@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  *
- * @author HP
+ * @author Tatiana Toquica y Juan José Vasquez
  */
 public class DeleteCommand extends Command{
      /**
