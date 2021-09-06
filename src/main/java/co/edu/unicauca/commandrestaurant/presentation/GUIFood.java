@@ -1,6 +1,7 @@
 package co.edu.unicauca.commandrestaurant.presentation;
 
 import co.edu.unicauca.commandrestaurant.domain.CreateCommand;
+import co.edu.unicauca.commandrestaurant.domain.DeleteCommand;
 import co.edu.unicauca.commandrestaurant.domain.Food;
 import javax.swing.table.DefaultTableModel;
 import co.edu.unicauca.commandrestaurant.domain.Invoker;
@@ -368,10 +369,53 @@ public class GUIFood extends javax.swing.JFrame {
     }//GEN-LAST:event_txtIdKeyPressed
 
     private void btnDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteActionPerformed
+        String name = txtName.getText();
+        if (name.isEmpty()) {
+            Messages.warningMessage("Debe agregar un nombre", "Atención");
+            txtName.requestFocus();
+            return;
+        }
+        // Preparar los datos
+        int id = Integer.parseInt(txtId.getText());
+        String type = cboType.getSelectedItem().toString();
+        FoodTypeEnum foodTpye = FoodTypeEnum.valueOf(type);
 
+        // Crea la comida con los nuevos datos
+        Food food = new Food(id, name, foodTpye);
+
+        // Traer la comida previa        
+        invoker.setCommand(new FindByIdCommand());
+        FindByIdCommand findByIdCommand = (FindByIdCommand) invoker.getCommand();
+        findByIdCommand.setFoodId(id);
+        invoker.execute();
+        //La comida previa debe crearse en una nueva instancia
+        Food compAux = findByIdCommand.getFood();
+        Food previous = new Food(compAux.getId(), compAux.getName(), compAux.getType());
+
+        //elimina la comida y guarda el previo
+        deleteFood(food, previous);
+
+        Messages.successMessage("Comida modificada con éxito", "Atención");
+        clearControls();
+        initStateButtons();
+        loadDataTable();        
     }//GEN-LAST:event_btnDeleteActionPerformed
-
-
+    /**
+     * Llama a la logica de negocio para modificar comida mediante el comando
+     *
+     * @param food comida a editar
+     * @param previous comida antes de ser modificada
+     */
+    private void deleteFood(Food food, Food previous) {
+        //Fija el UpdateCommand
+        invoker.setCommand(new DeleteCommand(food));
+        DeleteCommand deleteCommand = (DeleteCommand) invoker.getCommand();
+        //Fija al comida previa
+        deleteCommand.setFoodPrevious(previous);
+        //Ejecuta el comando
+        invoker.execute();
+    }
+     
     /**
      * Limpia las cajas de texto
      */
